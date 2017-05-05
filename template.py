@@ -336,29 +336,6 @@ write password in prompt.''')
       for one in count:
           for two in one:
               print('Ilość rekordów: ', two)
-
-      query1 = text("SELECT id FROM history WHERE content NOT LIKE '%<object source=\"Client\">%' AND src LIKE 'DATASOURCE' AND table_name LIKE 'Client%'")
-      history = simple_query(query1, None)
-      i=0
-      for one in history:
-          i=i+1;
-          for two in one:
-              print(i, two)
-              query2 = text("""UPDATE history upda_hist,
-                                 (SELECT hist1.id, Replace(`content`, '<metadata>',
-                                   CONCAT('<metadata><object source=\"Client\"><field name=\"id\" is_null=\"false\">',
-                                     (SELECT ca.client_id FROM clients_agreements ca 
-                                       WHERE ca.id IN
-                                         (SELECT ExtractValue(`content`, '/root/metadata/object[@source=\"ClientAgreement\"]/field')
-                                     FROM history hist3 WHERE hist3.id LIKE :param1
-                                     AND hist3.content NOT LIKE '%<object source=\"Client\">%'
-                                     AND hist3.src LIKE 'DATASOURCE' AND hist3.table_name LIKE 'Client%')) ,'</field></object>'))
-                                     AS t1 FROM history hist1) AS value_hist
-                               SET upda_hist.content = value_hist.t1
-                               WHERE value_hist.id LIKE :param2
-                               AND upda_hist.id LIKE :param3
-                               AND value_hist.t1 IS NOT NULL""")
-              res = simple_query(query2, two);
    except Exception as e:
       cmd = str()
       for one_arg in sys.argv:
