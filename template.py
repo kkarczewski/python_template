@@ -71,11 +71,13 @@ LOG_VERSION = 1.0
 def readfile(file_name):
    try:
       with open(file_name, 'r') as file:
-         templines = [line.rstrip('\n') for line in file]
-         lines=([])
-         for line in templines:
-            if not '#' in line:
-               lines.append(line)
+         lines = [line.rstrip('\n') for line in file]
+         #dla odrzucenia zakomentowanych linii z pliku wejściowego
+         #templines = [line.rstrip('\n') for line in file]
+         #lines=([])
+         #for line in templines:
+         #   if not line.startswith('#'):
+         #      lines.append(line)
    except (IOError, OSError):
       print >> sys.stderr, "Can't open file."
       sys.exit(1)
