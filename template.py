@@ -83,6 +83,18 @@ def readfile(file_name):
       sys.exit(1)
    return lines
 
+def writefile(path_to_conf,file_name,data):
+   if os.path.exists(path_to_conf):
+      try:
+         with open(path_to_conf+file_name,'w') as fileout:
+            for line in data:
+               fileout.writelines(line+'\n')
+      except(IOError,OSError):
+         print_err("Can't write to file.")
+         sys.exit(1)
+   else:
+      print_err("Can't write to file. There are no path that you specified")
+
 #Kolorowanie ok
 def print_ok(output):
    print(colorama.Fore.GREEN+output,colorama.Fore.RESET)
