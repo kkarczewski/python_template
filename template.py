@@ -48,6 +48,9 @@ for line in import_list:
             import pip
          except:
             print("Use sudo apt-get install python3-pip")
+            #TO DO - change script to use get-pip unless installing pip as root
+            # Solve problem with installing pip. 
+            # https://github.com/pypa/get-pip
             sys.exit(1)
          print('No lib '+line[0]+'-'+line[1])
          os.system("python"+sys.version[0:3]+" -m pip install '"+line[0]+'=='+line[1]+"' --target="+LIB_DIR+" -b "+TMP_DIR)
