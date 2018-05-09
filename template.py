@@ -42,14 +42,14 @@ for line in import_list:
    try:
       if os.path.isdir(LIB_DIR+line[2]):
          pass
-#         print('Found installed '+line[0]+line[1]+' in '+line[2])
+         #print('Found installed '+line[0]+line[1]+' in '+line[2])
       else:
          try:
             import pip
          except:
             print("Use sudo apt-get install python3-pip")
             #TO DO - change script to use get-pip unless installing pip as root
-            # Solve problem with installing pip. 
+            # Probably solution for problem with installing pip. 
             # https://github.com/pypa/get-pip
             sys.exit(1)
          print('No lib '+line[0]+'-'+line[1])
@@ -71,11 +71,11 @@ LOG_VERSION = 1.0
 # functions
 # #############################################################################
 #CZYTANIE Z PLIKU
-def readfile(file_name):
+def read_file(file_name):
    try:
       with open(file_name, 'r') as file:
          lines = [line.rstrip('\n') for line in file]
-         #dla odrzucenia zakomentowanych linii z pliku wejściowego
+         #Exclude commented lines from input file
          #templines = [line.rstrip('\n') for line in file]
          #lines=([])
          #for line in templines:
@@ -86,7 +86,7 @@ def readfile(file_name):
       sys.exit(1)
    return lines
 
-def writefile(path_to_conf,file_name,data):
+def write_file(path_to_conf,file_name,data):
    if os.path.exists(path_to_conf):
       try:
          with open(path_to_conf+file_name,'w') as fileout:
@@ -98,18 +98,20 @@ def writefile(path_to_conf,file_name,data):
    else:
       print_err("Can't write to file. There are no path that you specified")
 
-#Kolorowanie ok
+#Green coloring if everything in ok
 def print_ok(output):
    print(colorama.Fore.GREEN+output,colorama.Fore.RESET)
 
-#Kolorowanie błędu
+#Red coloring for errors
 def print_err(error):
-   print(colorama.Fore.RED+error,colorama.Fore.RESET)
+   print(colorama.Fore.RED,+error,colorama.Fore.RESET)
 
+#Yellow coloring for warnings
 def print_war(warning):
    print(colorama.Fore.YELLOW+warning,colorama.Fore.RESET)
 
-# pretty print do logowania
+# Pretty Print for xml log system (xml.etree don't support it, recommend to use lxml)
+# lxml will be used in next version
 def indent(elem, level=0):
   i = "\n" + level*"  "
   if len(elem):
@@ -125,7 +127,8 @@ def indent(elem, level=0):
     if level and (not elem.tail or not elem.tail.strip()):
       elem.tail = i
 
-#Logowanie
+#XML logging system 
+#Will be refactored to lxml in next version
 def my_logger(ERROR_FLAG,subcmd,outmsg):
    id_log = 1
    if not os.path.exists(LOGGER_PATH):
@@ -164,7 +167,8 @@ def my_logger(ERROR_FLAG,subcmd,outmsg):
       tree = ET.ElementTree(root)
    tree.write(LOGGER_PATH,encoding=OUTPUT_ENCODING,xml_declaration=True,method='xml')
 
-#Wykonywanie poleceń w terminalu
+#Executing bash commands in terminal from python script. Fancy method with asterix as progress bar.
+#TO DO!!! Simple os_call_simple(*args)
 def os_call(*args,progress_char='*',verbose=1):
    n = 0
    done_cmd = list()
@@ -221,18 +225,20 @@ def logonssh(server,loginssh,cmd):
       print(e)
 
 # CSV write example
-def csv_write(file_name, temp):
+def csv_write(file_name, limit, data):
    with open(file_name, 'w', newline='') as csvfile:
-      writer = csv.writer(csvfile, delimiter=temp)
-      writer.writerow(['example','date','for','csv'])
-      writer.writerow(['example']*4)
+      writer = csv.writer(csvfile, delimiter=limit)
+      for line in data:
+         writer.writerow(line)
+      #writer.writerow(['example','date','for','csv'])
+      #writer.writerow(['example']*4)
 # CSV read example
 def csv_read(file_name, temp):
    with open(file_name, 'r', newline='') as csvfile:
       reader = csv.reader(csvfile, delimiter=temp)
-      for row in reader:
-         print(row)
-
+      return reader
+      #for row in reader:
+      #   print(row)
 
 # SQLAlchemy simple example
 def simple_query(query, params):
@@ -248,7 +254,6 @@ def simple_query(query, params):
     connection.close()
     return result
 
-
 # #############################################################################
 # operations
 # #############################################################################
@@ -258,7 +263,6 @@ def opt_position(context, value_0):
 
 def opt_named(context, value_0, value_1, value_2):
    pass
-
 
 def opt_db_engine(args):
     global engine_text
@@ -281,12 +285,17 @@ def opt_help():
    msg = 'Printed help'
    msg = (base64.b64encode(('Printed help').encode(OUTPUT_ENCODING))).decode(OUTPUT_ENCODING)
    return msg
+
 # #############################################################################
 # main app 
 # #############################################################################
 if __name__ == '__main__':
-# Czytanie arugmentów
-   from sqlalchemy.sql import text
+# Reading arguments
+   try:
+      from sqlalchemy.sql import text
+   except Exception as e:
+      print_err('No sqlalchemy installation')
+      print_err(e)
    parser = argparse.ArgumentParser(
       prog='template.py',
       description='Description script',
