@@ -7,24 +7,23 @@ Created on 27 lip 2015
 '''
 
 # #############################################################################
-# standard modules (moduly z biblioteki standarowej pythona)
+# standard phyton modules
 # #############################################################################
 import os
 import sys
-# import re
-import time
+import string
 import argparse
 import subprocess
-# import pipes
-import getpass
-import csv
-import string
-# import uuid
-# import types
-# import shutil
-import xml.etree.ElementTree as ET
-import datetime
-import base64
+
+
+# #############################################################################
+# constants, global variables
+# #############################################################################
+OUTPUT_ENCODING = 'utf-8'
+DIRECTORY = './'
+TEMP_PATH = SCRIPT_DIR+'/cache/'
+LOGGER_PATH = SCRIPT_DIR+'/logfile.xml'
+LOG_VERSION = 1.0
 NAME = __file__
 SPLIT_DIR = os.path.dirname(os.path.realpath(NAME))
 SCRIPT_DIR = SPLIT_DIR + '/.' + os.path.basename(NAME)
@@ -59,14 +58,7 @@ for line in import_list:
    except ImportError as e:
       print(line[0]+' is not installed')
 
-# #############################################################################
-# constants, global variables
-# #############################################################################
-OUTPUT_ENCODING = 'utf-8'
-DIRECTORY = './'
-TEMP_PATH = SCRIPT_DIR+'/cache/'
-LOGGER_PATH = SCRIPT_DIR+'/logfile.xml'
-LOG_VERSION = 1.0
+
 # #############################################################################
 # functions
 # #############################################################################
@@ -130,6 +122,10 @@ def indent(elem, level=0):
 #XML logging system 
 #Will be refactored to lxml in next version
 def my_logger(ERROR_FLAG,subcmd,outmsg):
+   import xml.etree.ElementTree as ET # in case of usege - move on the top of the file to the list of libs in use
+   import datetime # in case of usege - move on the top of the file to the list of libs in use
+   import base64 # in case of usege - move on the top of the file to the list of libs in use
+   
    id_log = 1
    if not os.path.exists(LOGGER_PATH):
       root = ET.Element('root')
@@ -170,6 +166,7 @@ def my_logger(ERROR_FLAG,subcmd,outmsg):
 #Executing bash commands in terminal from python script. Fancy method with asterix as progress bar.
 #TO DO!!! Simple os_call_simple(*args)
 def os_call(*args,progress_char='*',verbose=1):
+   import time # in case of usege - move on the top of the file to the list of libs in use
    n = 0
    done_cmd = list()
    out = list()
@@ -207,6 +204,7 @@ def os_call(*args,progress_char='*',verbose=1):
 
 # Paramiko example
 def logonssh(server,loginssh,cmd):
+   import getpass # in case of usege - move on the top of the file to the list of libs in use
    try:
       ssh = paramiko.SSHClient()
       ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -226,6 +224,7 @@ def logonssh(server,loginssh,cmd):
 
 # CSV write example
 def csv_write(file_name, limit, data):
+   import csv ## in case of usege - move on the top of the file to the list of libs in use
    with open(file_name, 'w', newline='') as csvfile:
       writer = csv.writer(csvfile, delimiter=limit)
       for line in data:
@@ -234,6 +233,7 @@ def csv_write(file_name, limit, data):
       #writer.writerow(['example']*4)
 # CSV read example
 def csv_read(file_name, temp):
+   import csv ## in case of usege - move on the top of the file to the list of libs in use
    with open(file_name, 'r', newline='') as csvfile:
       reader = csv.reader(csvfile, delimiter=temp)
       return reader
@@ -265,20 +265,21 @@ def opt_named(context, value_0, value_1, value_2):
    pass
 
 def opt_db_engine(args):
-    global engine_text
-    config = dict(user=args.user, host=args.host, port=args.port, password=args.password, schema=args.schema)
-    if not 'schema' in args:
-        sys.exit(print_err("Database schema is required."))
-    else:
-        config['schema'] = args.schema
-    if args.password == None:
-        config['password'] = getpass.getpass('Password to database: ')
-    else:
-        config['password'] = args.password
-    temp = string.Template('mysql+pymysql://$user:$password@$host$port/$schema')
-    engine_text = temp.safe_substitute(config)
-    if 'localhost' in engine_text:
-        engine_text+='?unix_socket=/var/run/mysqld/mysqld.sock'
+   import getpass # in case of usege - move on the top of the file to the list of libs in use
+   global engine_text
+   config = dict(user=args.user, host=args.host, port=args.port, password=args.password, schema=args.schema)
+   if not 'schema' in args:
+      sys.exit(print_err("Database schema is required."))
+   else:
+      config['schema'] = args.schema
+   if args.password == None:
+      config['password'] = getpass.getpass('Password to database: ')
+   else:
+      config['password'] = args.password
+   temp = string.Template('mysql+pymysql://$user:$password@$host$port/$schema')
+   engine_text = temp.safe_substitute(config)
+   if 'localhost' in engine_text:
+      engine_text+='?unix_socket=/var/run/mysqld/mysqld.sock'
 
 def opt_help():
    parser.print_help()
