@@ -3,7 +3,7 @@
 '''
 Created on 27 lip 2015
 
-@author: kamil@justnet.pl
+@author: kamil.karczewski
 '''
 
 # #############################################################################
@@ -14,7 +14,6 @@ import sys
 import string
 import argparse
 import subprocess
-
 
 # #############################################################################
 # constants, global variables
@@ -62,22 +61,31 @@ for line in import_list:
 # #############################################################################
 # functions
 # #############################################################################
-#CZYTANIE Z PLIKU
+# Read from file line by line
 def read_file(file_name):
    try:
       with open(file_name, 'r') as file:
          lines = [line.rstrip('\n') for line in file]
-         #Exclude commented lines from input file
-         #templines = [line.rstrip('\n') for line in file]
-         #lines=([])
-         #for line in templines:
-         #   if not line.startswith('#'):
-         #      lines.append(line)
    except (IOError, OSError):
       print >> sys.stderr, "Can't open file."
       sys.exit(1)
    return lines
 
+# Read from file line by line excluding comments
+def read_file_no_comments(file_name):
+   try:
+      with open(file_name, 'r') as file:
+         templines = [line.rstrip('\n') for line in file]
+         lines=([])
+         for line in templines:
+            if not line.startswith('#'):
+               lines.append(line)
+   except (IOError, OSError):
+      print >> sys.stderr, "Can't open file."
+      sys.exit(1)
+   return lines
+
+# Write to file line by line.
 def write_file(path_to_conf,file_name,data):
    if os.path.exists(path_to_conf):
       try:
@@ -90,15 +98,15 @@ def write_file(path_to_conf,file_name,data):
    else:
       print_err("Can't write to file. There are no path that you specified")
 
-#Green coloring if everything in ok
+# Green coloring if everything in ok
 def print_ok(output):
    print(colorama.Fore.GREEN+output,colorama.Fore.RESET)
 
-#Red coloring for errors
+# Red coloring for errors
 def print_err(error):
    print(colorama.Fore.RED,+error,colorama.Fore.RESET)
 
-#Yellow coloring for warnings
+# Yellow coloring for warnings
 def print_war(warning):
    print(colorama.Fore.YELLOW+warning,colorama.Fore.RESET)
 
