@@ -26,12 +26,15 @@ LIB_DIR = SCRIPT_DIR + '/cache/lib/'
 TMP_DIR = SPLIT_DIR + '/tmp/'
 sys.path.insert(0, LIB_DIR)
 
-# List of lib to install
+# #############################################################################
+# third party phyton modules - list with procedure to install and import them
+# #############################################################################
 import_list = [
-   ('sqlalchemy', '1.0.8', 'SQLAlchemy-1.0.8.egg-info'),
-   ('paramiko', '1.15.2', 'paramiko-1.15.2.dist-info'),
-   ('colorama', '0.3.3', 'colorama-0.3.3.egg-info'),
-   ('pymysql', '0.6.7', 'PyMySQL-0.6.7.dist-info')]
+   ('sqlalchemy', '1.0.8', 'SQLAlchemy-1.0.8.egg-info'), # Database connector
+   ('pymysql', '0.6.7', 'PyMySQL-0.6.7.dist-info'),      # Database driver
+   ('paramiko', '1.15.2', 'paramiko-1.15.2.dist-info'),  # SSH connector
+   ('colorama', '0.3.3', 'colorama-0.3.3.egg-info')]     # Colloring output
+
 for line in import_list:
    try:
       if os.path.isdir(LIB_DIR+line[2]):
@@ -53,12 +56,14 @@ for line in import_list:
    except ImportError as e:
       print(line[0]+' is not installed')
 
-
 # #############################################################################
 # functions
 # #############################################################################
-# Read from file line by line
+
 def read_file(file_name):
+   '''
+   Read from file line by line
+   '''
    try:
       with open(file_name, 'r') as file:
          lines = [line.rstrip('\n') for line in file]
@@ -67,8 +72,10 @@ def read_file(file_name):
       sys.exit(1)
    return lines
 
-# Read from file line by line excluding comments
 def read_file_no_comments(file_name):
+   '''
+   Read from file line by line excluding comments
+   '''
    try:
       with open(file_name, 'r') as file:
          templines = [line.rstrip('\n') for line in file]
@@ -81,8 +88,10 @@ def read_file_no_comments(file_name):
       sys.exit(1)
    return lines
 
-# Write to file line by line.
 def write_file(path_to_conf,file_name,data):
+   '''
+   Write to file line by line.
+   '''
    if os.path.exists(path_to_conf):
       try:
          with open(path_to_conf+file_name,'w') as fileout:
@@ -94,20 +103,28 @@ def write_file(path_to_conf,file_name,data):
    else:
       print_err("Can't write to file. There are no path that you specified")
 
-# Green coloring if everything in ok
 def print_ok(output):
+   '''
+   Green coloring if everything in ok.
+   '''
    print(colorama.Fore.GREEN+output,colorama.Fore.RESET)
 
-# Red coloring for errors
 def print_err(error):
+   '''
+   Red coloring for errors.
+   '''
    print(colorama.Fore.RED,+error,colorama.Fore.RESET)
 
-# Yellow coloring for warnings
 def print_war(warning):
+   '''
+   Yellow coloring for warnings.
+   '''
    print(colorama.Fore.YELLOW+warning,colorama.Fore.RESET)
 
-# Paramiko example
 def logonssh(server,loginssh,cmd):
+   '''
+   Paramiko simple example.
+   '''
    import getpass # in case of usege - move on the top of the file to the list of libs in use
    try:
       ssh = paramiko.SSHClient()
@@ -126,8 +143,10 @@ def logonssh(server,loginssh,cmd):
    except Exception as e:
       print(e)
 
-# CSV write example
 def csv_write(file_name, limit, data):
+   '''
+   CSV write example.
+   '''
    import csv ## in case of usege - move on the top of the file to the list of libs in use
    with open(file_name, 'w', newline='') as csvfile:
       writer = csv.writer(csvfile, delimiter=limit)
@@ -135,28 +154,33 @@ def csv_write(file_name, limit, data):
          writer.writerow(line)
       #writer.writerow(['example','date','for','csv'])
       #writer.writerow(['example']*4)
-# CSV read example
+
 def csv_read(file_name, temp):
+   '''
+   CSV read example.
+   '''
    import csv ## in case of usege - move on the top of the file to the list of libs in use
    with open(file_name, 'r', newline='') as csvfile:
-      reader = csv.reader(csvfile, delimiter=temp)
-      return reader
+      readed = csv.reader(csvfile, delimiter=temp)
+      return readed
       #for row in reader:
       #   print(row)
 
-# SQLAlchemy simple example
 def simple_query(query, params):
-    engine = sqlalchemy.create_engine(engine_text)
-    # engine = create_engine(dialect+driver://username:password@host:port/database)
-    connection = engine.connect()
-    if params is None:
-        result = connection.execute(query)
-    else:
-        result = connection.execute(query, param1=params, param2=params, param3=params)
-    # for row in result:
-    #     print(row)
-    connection.close()
-    return result
+   '''
+   SQLAlchemy simple example.
+   '''
+   engine = sqlalchemy.create_engine(engine_text)
+   # engine = create_engine(dialect+driver://username:password@host:port/database)
+   connection = engine.connect()
+   if params is None:
+      result = connection.execute(query)
+   else:
+      result = connection.execute(query, param1=params, param2=params, param3=params)
+   # for row in result:
+   #    print(row)
+   connection.close()
+   return result
 
 # #############################################################################
 # operations
@@ -184,15 +208,18 @@ def opt_db_engine(args):
    engine_text = temp.safe_substitute(config)
    if 'localhost' in engine_text:
       engine_text+='?unix_socket=/var/run/mysqld/mysqld.sock'
+      
 def test():
-   # Testowe wydruki
+   '''
+   Test usage and printing output.
+   '''
    lines = ['ls -l','mkdir test','ls -la','touch plik']
    lines = readfile('sza.txt')
    ERROR_FLAG,done_cmd,out = os_call(*lines,progress_char='*',verbose=2)
    logonssh('dev.justnet.pl','kamil','ls -la')
    csv_write('eggs.csv',' ')
    csv_read('eggs.csv',' ')
-   opt_db_engine(args) # przenieść do if:elif: w miejscu w którym używamy bazy
+   opt_db_engine(args) #move to if:elif: for argparse in place where we use database
    query0 = text("SELECT COUNT(id) FROM history WHERE content NOT LIKE '%<object source=\"Client\">%' AND src LIKE 'DATASOURCE' AND table_name LIKE 'Client%'")
    count = simple_query(query0, None)
    for one in count:
@@ -280,7 +307,6 @@ write password in prompt.''')
       my_logger('T',list_cmd,err_msg)
       print(e)
    
-
 if __name__ == '__main__':
    main()
 
