@@ -2,7 +2,6 @@
 #! -*- coding: utf-8 -*-
 '''
 Created on 27 lip 2015
-
 @author: kamil.karczewski
 '''
 
@@ -16,6 +15,7 @@ import string        # standard string lib
 import getpass       # standard gepass lib to hiding password
 import argparse      # standard argparse lib to manage args from cmd
 import subprocess    # standard subprocess lib to executing bash commend thru python
+
 # #############################################################################
 # constants, global variables
 # #############################################################################
@@ -27,9 +27,10 @@ sys.path.insert(0, LIB_DIR)
 
 # #############################################################################
 # Third party phyton modules - list with procedure to install and import them
-# And libs not common in use - like getpass and cvs.
 # #############################################################################
 # After first installation check for rigth package name in LIB_DIR for third column
+# Bug for third party libs - workaround - After first installation it need to rerun the script.
+# Don't know why, still under investigation.
 import_list = [
    ('sqlalchemy', '1.2.7', 'SQLAlchemy-1.2.7-py3.6.egg-info'), # Database connector
    ('pymysql', '0.8.1', 'PyMySQL-0.8.1.dist-info'),            # Database driver
@@ -342,4 +343,3 @@ write password in prompt.''')
 
 if __name__ == '__main__':
    main()
-
