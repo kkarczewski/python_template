@@ -9,11 +9,13 @@ Created on 27 lip 2015
 # #############################################################################
 # standard phyton modules
 # #############################################################################
-import os
-import sys
-import string
-import argparse
-#import subprocess # comment if not executing bash commend thru python
+import os            # standard os lib
+import sys           # standard sys lib
+import cvs           # standard cvs lib for cvs file I/O
+import string        # standard string lib
+import getpass       # standard gepass lib to hiding password
+import argparse      # standard argparse lib to manage args from cmd
+import subprocess    # standard subprocess lib to executing bash commend thru python
 # #############################################################################
 # constants, global variables
 # #############################################################################
@@ -32,9 +34,7 @@ import_list = [
    ('sqlalchemy', '1.2.7', 'SQLAlchemy-1.2.7-py3.6.egg-info'), # Database connector
    ('pymysql', '0.8.1', 'PyMySQL-0.8.1.dist-info'),            # Database driver
    ('paramiko', '2.4.1', 'paramiko-2.4.1.dist-info'),          # SSH connector
-   ('colorama', '0.3.3', 'colorama-0.3.3-py3.6.egg-info'),     # Colloring output
-   ('getpass','',''),                                          # For user password in paramiko or sqlalchemy
-   ('csv','','')                                               # For csv I/O
+   ('colorama', '0.3.3', 'colorama-0.3.3-py3.6.egg-info')      # Colloring output
 ]
 
 for line in import_list:
@@ -180,6 +180,25 @@ def simple_query(query, params):
    connection.close()
    return result
 
+def execute_cmd(list_of_cmd):
+   result = dict()
+   if isinstance(list_of_cmd, str):
+      list_of_cmd = [list_of_cmd]
+   proc = subprocess.Popen(list_of_cmd,
+                           stdin=subprocess.PIPE,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE,
+                           shell=True)
+   (stdout,stderr) = proc.communicate()
+
+   if proc.returncode == 0 and stderr.decode('ascii') == '':
+      result['stdout'] = stdout.decode('ascii').split('\n')
+   else:
+      result['exit_code'] = proc.returncode
+      result['stderr'] = stderr.decode('ascii')
+      result['command'] = list_of_cmd
+   return result
+
 # #############################################################################
 # operations
 # #############################################################################
@@ -238,15 +257,9 @@ def opt_sqlalchemy(args):
    for row in response:
       print(row[1],row[0],row[2])
 
-#TO DO  
-def opt_subprocess():
-   '''
-   Test usage of subprocess
-   '''
-   lines = ['ls -l','mkdir test','ls -la','touch plik']
-   lines = readfile('sza.txt')
-   output = execute_cmd(*lines)
-   print(output)
+def opt_subprocess(cmd):
+   response = execute_cmd([cmd])
+   print(response)
 
 def opt_help():
    parser.print_help()
@@ -298,7 +311,9 @@ write password in prompt.''')
       help='Test executing bash command with paramiko. Required server user cmd')
    parser.add_argument('--sqlalchemy','-sql',
       help='Test connection to database. Creds are in different args. Here specify query.')
-   
+   parser.add_argument('--subprocess','-sub',
+      help='Test executing bash command with subprocess. Required cmd.')
+
    argv = sys.argv[1:]
    args = parser.parse_args(argv)
    try:
@@ -318,18 +333,13 @@ write password in prompt.''')
          opt_paramiko(args.paramiko)
       elif 'sqlalchemy' in args:
          opt_sqlalchemy(args)
+      elif 'subprocess' in args:
+         opt_subprocess(args.subprocess)
       else:
          opt_help(parser)
    except Exception as e:
       print_err(e)
 
 if __name__ == '__main__':
-   try:
-      #Bug with sqlalchemy. Workaround After first installation it has to be imported twice.
-      #Don't know why, still under investigation.
-      from sqlalchemy.sql import text
-   except Exception as e:
-      print_err('No sqlalchemy installation')
-      print_err(e)
    main()
 
