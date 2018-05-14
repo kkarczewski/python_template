@@ -13,27 +13,29 @@ import os
 import sys
 import string
 import argparse
-import subprocess
-
+#import subprocess # comment if not executing bash commend thru python
 # #############################################################################
 # constants, global variables
 # #############################################################################
 NAME = __file__
-TEMP_PATH = SCRIPT_DIR+'/cache/'
 SPLIT_DIR = os.path.dirname(os.path.realpath(NAME))
 SCRIPT_DIR = SPLIT_DIR + '/.' + os.path.basename(NAME)
 LIB_DIR = SCRIPT_DIR + '/cache/lib/'
-TMP_DIR = SPLIT_DIR + '/tmp/'
 sys.path.insert(0, LIB_DIR)
 
 # #############################################################################
-# third party phyton modules - list with procedure to install and import them
+# Third party phyton modules - list with procedure to install and import them
+# And libs not common in use - like getpass and cvs.
 # #############################################################################
+# After first installation check for rigth package name in LIB_DIR for third column
 import_list = [
-   ('sqlalchemy', '1.0.8', 'SQLAlchemy-1.0.8.egg-info'), # Database connector
-   ('pymysql', '0.6.7', 'PyMySQL-0.6.7.dist-info'),      # Database driver
-   ('paramiko', '1.15.2', 'paramiko-1.15.2.dist-info'),  # SSH connector
-   ('colorama', '0.3.3', 'colorama-0.3.3.egg-info')]     # Colloring output
+   ('sqlalchemy', '1.2.7', 'SQLAlchemy-1.2.7-py3.6.egg-info'), # Database connector
+   ('pymysql', '0.8.1', 'PyMySQL-0.8.1.dist-info'),            # Database driver
+   ('paramiko', '2.4.1', 'paramiko-2.4.1.dist-info'),          # SSH connector
+   ('colorama', '0.3.3', 'colorama-0.3.3-py3.6.egg-info'),     # Colloring output
+   ('getpass','',''),                                          # For user password in paramiko or sqlalchemy
+   ('csv','','')                                               # For csv I/O
+]
 
 for line in import_list:
    try:
@@ -44,9 +46,10 @@ for line in import_list:
          try:
             import pip
          except:
-            print("Use sudo apt-get install python3-pip")
+            print("For debian - Use sudo apt-get install python3-pip")
+            print("For centos/redhat - use  yum -y install python36u-pip")
             #TO DO - change script to use get-pip unless installing pip as root
-            # Probably solution for problem with installing pip. 
+            # Probably solution for problem with installing pip.
             # https://github.com/pypa/get-pip
             sys.exit(1)
          print('No lib '+line[0]+'-'+line[1])
@@ -68,7 +71,7 @@ def read_file(file_name):
       with open(file_name, 'r') as file:
          lines = [line.rstrip('\n') for line in file]
    except (IOError, OSError):
-      print >> sys.stderr, "Can't open file."
+      print_err(str(sys.stderr) + "\nCan't open file.")
       sys.exit(1)
    return lines
 
@@ -84,7 +87,7 @@ def read_file_no_comments(file_name):
             if not line.startswith('#'):
                lines.append(line)
    except (IOError, OSError):
-      print >> sys.stderr, "Can't open file."
+      print_err(str(sys.stderr) + "\nCan't open file.")
       sys.exit(1)
    return lines
 
@@ -92,6 +95,8 @@ def write_file(path_to_conf,file_name,data):
    '''
    Write to file line by line.
    '''
+   if isinstance(data, str):
+      data = data.split('\n')
    if os.path.exists(path_to_conf):
       try:
          with open(path_to_conf+file_name,'w') as fileout:
@@ -121,11 +126,29 @@ def print_war(warning):
    '''
    print(colorama.Fore.YELLOW+warning,colorama.Fore.RESET)
 
-def logonssh(server,loginssh,cmd):
+def csv_write(file_name, limit, data):
+   '''
+   CSV write example.
+   '''
+   if isinstance(data, str):
+      data = data.split('\n')
+   with open(file_name, 'w', newline='') as csvfile:
+      writer = csv.writer(csvfile, delimiter=limit)
+      for line in data:
+         writer.writerow(line)
+
+def csv_read(file_name, temp):
+   '''
+   CSV read example.
+   '''
+   with open(file_name, 'r', newline='') as csvfile:
+      readed = csv.reader(csvfile, delimiter=temp)
+      return readed
+      
+def cmd_over_ssh(server,loginssh,cmd):
    '''
    Paramiko simple example.
    '''
-   import getpass # in case of usege - move on the top of the file to the list of libs in use
    try:
       ssh = paramiko.SSHClient()
       ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -135,37 +158,14 @@ def logonssh(server,loginssh,cmd):
       error = stderr.readlines()
       if error:
          for line in error:
-            print(line)
+            print_err(line)
       else:
          for line in output:
-            print(line)
+            print_ok(line)
       ssh.close()
    except Exception as e:
-      print(e)
-
-def csv_write(file_name, limit, data):
-   '''
-   CSV write example.
-   '''
-   import csv ## in case of usege - move on the top of the file to the list of libs in use
-   with open(file_name, 'w', newline='') as csvfile:
-      writer = csv.writer(csvfile, delimiter=limit)
-      for line in data:
-         writer.writerow(line)
-      #writer.writerow(['example','date','for','csv'])
-      #writer.writerow(['example']*4)
-
-def csv_read(file_name, temp):
-   '''
-   CSV read example.
-   '''
-   import csv ## in case of usege - move on the top of the file to the list of libs in use
-   with open(file_name, 'r', newline='') as csvfile:
-      readed = csv.reader(csvfile, delimiter=temp)
-      return readed
-      #for row in reader:
-      #   print(row)
-
+      print_err(e)
+      
 def simple_query(query, params):
    '''
    SQLAlchemy simple example.
@@ -177,8 +177,6 @@ def simple_query(query, params):
       result = connection.execute(query)
    else:
       result = connection.execute(query, param1=params, param2=params, param3=params)
-   # for row in result:
-   #    print(row)
    connection.close()
    return result
 
@@ -186,14 +184,7 @@ def simple_query(query, params):
 # operations
 # #############################################################################
 
-def opt_position(context, value_0):
-   pass
-
-def opt_named(context, value_0, value_1, value_2):
-   pass
-
 def opt_db_engine(args):
-   import getpass # in case of usege - move on the top of the file to the list of libs in use
    global engine_text
    config = dict(user=args.user, host=args.host, port=args.port, password=args.password, schema=args.schema)
    if not 'schema' in args:
@@ -206,46 +197,67 @@ def opt_db_engine(args):
       config['password'] = args.password
    temp = string.Template('mysql+pymysql://$user:$password@$host$port/$schema')
    engine_text = temp.safe_substitute(config)
-   if 'localhost' in engine_text:
-      engine_text+='?unix_socket=/var/run/mysqld/mysqld.sock'
-      
-def test():
+   #OLD VERSION NEEDS SPECIFIED SOCKET TO CONNECT WITH LOCALHOST
+   #if 'localhost' in engine_text:
+   #   engine_text+='?unix_socket=/var/run/mysqld/mysqld.sock'
+
+def opt_read_file(in_file):
+   print(read_file(in_file))
+
+def opt_read_ex_comment(in_file):
+   print(read_file_no_comments(in_file))
+
+def opt_write_file(out_file):
+   data = 'aergqwergwer\nasdfaweqwzn\nline3\nline4\n#comment'
+   write_file('./',out_file,data)
+   data2 = ['fasdfasdf','asdfwergwe','line100','line10000']
+   write_file('./','second_file',data2)
+
+def opt_write_csv(file_name):
+   data = [['asd','gfadfgd','fgarsdfgf'],['qae','qwr','wer'],['line3','1','2'],['line4','4','#comment']]
+   csv_write(file_name,';',data)
+   data2 = [['fasdfasdf'],['asdfwergwe'],['line100'],['line10000']]
+   csv_write(file_name+'2',';',data2)
+
+def opt_read_csv(file_name):
+   print(csv_read(file_name, ';'))
+   for one in csv_read(file_name,';'):
+      print(one)
+
+def opt_paramiko(args):
+   cmd_over_ssh(args[0],args[1],args[2])
+
+def opt_sqlalchemy(args):
    '''
    Test usage and printing output.
    '''
+   opt_db_engine(args) #move to if:elif: for argparse in place where we use database
+   query = sqlalchemy.text(args.sqlalchemy)
+   response = simple_query(query, None)
+   print(response)
+   for row in response:
+      print(row[1],row[0],row[2])
+
+#TO DO  
+def opt_subprocess():
+   '''
+   Test usage of subprocess
+   '''
    lines = ['ls -l','mkdir test','ls -la','touch plik']
    lines = readfile('sza.txt')
-   ERROR_FLAG,done_cmd,out = os_call(*lines,progress_char='*',verbose=2)
-   logonssh('dev.justnet.pl','kamil','ls -la')
-   csv_write('eggs.csv',' ')
-   csv_read('eggs.csv',' ')
-   opt_db_engine(args) #move to if:elif: for argparse in place where we use database
-   query0 = text("SELECT COUNT(id) FROM history WHERE content NOT LIKE '%<object source=\"Client\">%' AND src LIKE 'DATASOURCE' AND table_name LIKE 'Client%'")
-   count = simple_query(query0, None)
-   for one in count:
-      for two in one:
-         print('Ilość rekordów: ', two)
+   output = execute_cmd(*lines)
+   print(output)
 
 def opt_help():
    parser.print_help()
-   msg = 'Printed help'
-   msg = (base64.b64encode(('Printed help').encode(OUTPUT_ENCODING))).decode(OUTPUT_ENCODING)
+   msg = 'Printdded help'
    return msg
 
 # #############################################################################
-# main app 
+# main app function - reading arguments with argpars
 # #############################################################################
 
 def main():
-   # Reading arguments
-   #Uncomment in case of usage db connection.
-   #try:
-   #   #Bug with sqlalchemy. Workaround After first installation it has to be imported twice.
-   #   #Don't know why, still under investigation.
-   #   from sqlalchemy.sql import text
-   #except Exception as e:
-   #   print_err('No sqlalchemy installation')
-   #   print_err(e)
    parser = argparse.ArgumentParser(
       prog='template.py',
       description='Description script',
@@ -254,10 +266,10 @@ def main():
       argument_default=argparse.SUPPRESS,
       formatter_class=argparse.RawTextHelpFormatter)
    parser.add_argument('--user','-U',
-      default='jsql',
+      default='root',
       help = 'Database user name/login..')
    parser.add_argument('--password','-P',
-      default = 'qazxcdews',
+      default = 'password',
       nargs='?',
       help = '''Database user password, no password as default,
 if used without value you will be asked to
@@ -269,44 +281,55 @@ write password in prompt.''')
       default='',
       help = 'Database port number.')
    parser.add_argument('--schema','-S',
-      default = 'psm_sza_current',
-      help = 'Database schema name.')
-   parser.add_argument('arg-position',
-      nargs='?',
-      help='label under which the data will be saved')
-   parser.add_argument('--arg-named','-a',
-      action='store_true',
-      help='show list with data')
-   subparsers = parser.add_subparsers()
-   parser_subone = subparsers.add_parser('sub-arg',help='Decription subone')
-   parser_subone.add_argument('sub-arg',
-      nargs='?',
-      help='Description subone')
+      default = 'mysql',
+      help = 'Database schema name.')  
+   parser.add_argument('--read_file','-rf',
+      help='Test reading all file content. Require file_path.')
+   parser.add_argument('--read_ex_comment','-rec',
+      help='Test reading file content, excluding commented lines. Require file_path')
+   parser.add_argument('--write_file','-wf',
+      help='Test writing to file. Require file_path.')
+   parser.add_argument('--write_csv','-wc',
+      help='Test writing to csv file. Require file_path.')
+   parser.add_argument('--read_csv','-rc',
+      help='Test reading to csv file. Require file_path.')
+   parser.add_argument('--paramiko','-pa',
+      nargs=3,
+      help='Test executing bash command with paramiko. Required server user cmd')
+   parser.add_argument('--sqlalchemy','-sql',
+      help='Test connection to database. Creds are in different args. Here specify query.')
+   
    argv = sys.argv[1:]
    args = parser.parse_args(argv)
    try:
       if not len(sys.argv) > 1 or 'help' in args:
-         opt_help()
-      elif 'test' in args:
-         opt_test()
-      #elif 'arg_position' in args:
-      #   opt_position(ctx, args.arg_position)
-      #elif 'arg_named' in args:
-      #   opt_some(ctx, args.arg_named, 'none', -1)
-      #elif 'sub-arg' in args:
-      #   opt_some(ctx,args.sub-arg,'none',-1)      
+         opt_help(parser)
+      elif 'read_file' in args:
+         opt_read_file(args.read_file)
+      elif 'read_ex_comment' in args:
+         opt_read_ex_comment(args.read_ex_comment)
+      elif 'write_file' in args:
+         opt_write_file(args.write_file)
+      elif 'write_csv' in args:
+         opt_write_csv(args.write_csv)
+      elif 'read_csv' in args:
+         opt_read_csv(args.read_csv)
+      elif 'paramiko' in args:
+         opt_paramiko(args.paramiko)
+      elif 'sqlalchemy' in args:
+         opt_sqlalchemy(args)
       else:
-         opt_help()
+         opt_help(parser)
    except Exception as e:
-      cmd = str()
-      for one_arg in sys.argv:
-         cmd+=one_arg+' '
-      list_cmd=list()
-      list_cmd.append(cmd)
-      err_msg = str(e)
-      my_logger('T',list_cmd,err_msg)
-      print(e)
-   
+      print_err(e)
+
 if __name__ == '__main__':
+   try:
+      #Bug with sqlalchemy. Workaround After first installation it has to be imported twice.
+      #Don't know why, still under investigation.
+      from sqlalchemy.sql import text
+   except Exception as e:
+      print_err('No sqlalchemy installation')
+      print_err(e)
    main()
 
