@@ -284,7 +284,7 @@ def opt_read_xml(file_name):
    '''
    xml_tree = read_xml_file(file_name)
    print(etree.tostring(xml_tree, pretty_print=True).decode('ascii'))
-  
+
 def opt_help(parser):
    parser.print_help()
    msg = 'Printed help'
