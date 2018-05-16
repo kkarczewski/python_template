@@ -145,8 +145,8 @@ def csv_read(file_name, temp):
    '''
    with open(file_name, 'r', newline='') as csvfile:
       readed = csv.reader(csvfile, delimiter=temp)
-      return readed
-      
+      return list(readed)
+
 def cmd_over_ssh(server,loginssh,cmd):
    '''
    Paramiko simple example.
@@ -163,7 +163,7 @@ def cmd_over_ssh(server,loginssh,cmd):
             print_err(line)
       else:
          for line in output:
-            print_ok(line)
+            print_ok(line.replace('\n',''))
       ssh.close()
    except Exception as e:
       print_err(e)
