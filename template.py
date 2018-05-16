@@ -42,8 +42,8 @@ import_list = [
 for line in import_list:
    try:
       if os.path.isdir(LIB_DIR+line[2]):
-         pass
          #print('Found installed '+line[0]+line[1]+' in '+line[2])
+         pass
       else:
          try:
             import pip
