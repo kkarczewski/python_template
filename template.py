@@ -167,13 +167,13 @@ def cmd_over_ssh(server,loginssh,cmd):
       ssh.close()
    except Exception as e:
       print_err(e)
-      
+
 def simple_query(query, params):
    '''
    SQLAlchemy simple example.
    '''
    engine = sqlalchemy.create_engine(engine_text)
-   # engine = create_engine(dialect+driver://username:password@host:port/database)
+   # engine = sqlalchemy.create_engine(dialect+driver://username:password@host:port/database)
    connection = engine.connect()
    if params is None:
       result = connection.execute(query)
@@ -272,10 +272,16 @@ def opt_sqlalchemy(args):
       print(row[1],row[0],row[2])
 
 def opt_subprocess(cmd):
+   '''
+   Test usage of subprocess function.
+   '''
    response = execute_cmd([cmd])
    print(response)
 
 def opt_read_xml(file_name):
+   '''
+   Test usage of xml reader.
+   '''
    xml_file = read_xml_file(file_name)
    print(etree.tostring(root, pretty_print=True).decode('ascii'))
   
