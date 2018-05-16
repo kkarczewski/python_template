@@ -10,7 +10,7 @@ Created on 27 lip 2015
 # #############################################################################
 import os            # standard os lib
 import sys           # standard sys lib
-import cvs           # standard cvs lib for cvs file I/O
+import csv           # standard csv lib for cvs file I/O
 import string        # standard string lib
 import getpass       # standard gepass lib to hiding password
 import argparse      # standard argparse lib to manage args from cmd
