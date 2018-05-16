@@ -120,7 +120,7 @@ def print_err(error):
    '''
    Red coloring for errors.
    '''
-   print(colorama.Fore.RED,+error,colorama.Fore.RESET)
+   print(colorama.Fore.RED+error,colorama.Fore.RESET)
 
 def print_war(warning):
    '''
