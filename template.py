@@ -114,19 +114,19 @@ def print_ok(output):
    '''
    Green coloring if everything in ok.
    '''
-   print(colorama.Fore.GREEN+str(output),colorama.Fore.RESET)
+   print(colorama.Fore.GREEN + str(output) + colorama.Fore.RESET)
 
 def print_err(error):
    '''
    Red coloring for errors.
    '''
-   print(colorama.Fore.RED+str(error),colorama.Fore.RESET)
+   print(colorama.Fore.RED + str(error) + colorama.Fore.RESET)
 
 def print_war(warning):
    '''
    Yellow coloring for warnings.
    '''
-   print(colorama.Fore.YELLOW+str(warning),colorama.Fore.RESET)
+   print(colorama.Fore.YELLOW + str(warning) + colorama.Fore.RESET)
 
 def csv_write(file_name, limit, data):
    '''
