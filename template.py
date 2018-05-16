@@ -201,6 +201,18 @@ def execute_cmd(list_of_cmd):
       result['command'] = list_of_cmd
    return result
 
+def read_xml_file(path):
+   '''
+   XML file reader.
+   '''
+   try:
+      tree = etree.parse(path)
+      root = tree.getroot()
+      return root
+   except IOError as e:
+      print('Problem with file or filepath.')
+      print(e)
+
 # #############################################################################
 # operations
 # #############################################################################
@@ -263,6 +275,10 @@ def opt_subprocess(cmd):
    response = execute_cmd([cmd])
    print(response)
 
+def opt_read_xml(file_name):
+   xml_file = read_xml_file(file_name)
+   print(etree.tostring(root, pretty_print=True).decode('ascii'))
+  
 def opt_help():
    parser.print_help()
    msg = 'Printdded help'
@@ -315,6 +331,8 @@ write password in prompt.''')
       help='Test connection to database. Creds are in different args. Here specify query.')
    parser.add_argument('--subprocess','-sub',
       help='Test executing bash command with subprocess. Required cmd.')
+   parser.add_argument('--read_xml','-rx',
+      help='Test read xml file. Required file_path.')
 
    argv = sys.argv[1:]
    args = parser.parse_args(argv)
@@ -337,10 +355,16 @@ write password in prompt.''')
          opt_sqlalchemy(args)
       elif 'subprocess' in args:
          opt_subprocess(args.subprocess)
+      elif 'read_xml' in args:
+         opt_read_xml(args.read_xml)
       else:
          opt_help(parser)
    except Exception as e:
       print_err(e)
 
 if __name__ == '__main__':
+   # required by lxml as it's 3rd party lib
+   # and automatic import doesn't support import using 'from'
+   # TO DO auto import supporting 'from lib import part'
+   from lxml import etree 
    main()
