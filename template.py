@@ -10,7 +10,7 @@ Created on 27 lip 2015
 # #############################################################################
 import os            # standard os lib
 import sys           # standard sys lib
-import csv           # standard csv lib for cvs file I/O
+import csv           # standard csv lib for csv file I/O
 import string        # standard string lib
 import getpass       # standard gepass lib to hiding password
 import argparse      # standard argparse lib to manage args from cmd
@@ -114,19 +114,19 @@ def print_ok(output):
    '''
    Green coloring if everything in ok.
    '''
-   print(colorama.Fore.GREEN+output,colorama.Fore.RESET)
+   print(colorama.Fore.GREEN+str(output),colorama.Fore.RESET)
 
 def print_err(error):
    '''
    Red coloring for errors.
    '''
-   print(colorama.Fore.RED+error,colorama.Fore.RESET)
+   print(colorama.Fore.RED+str(error),colorama.Fore.RESET)
 
 def print_war(warning):
    '''
    Yellow coloring for warnings.
    '''
-   print(colorama.Fore.YELLOW+warning,colorama.Fore.RESET)
+   print(colorama.Fore.YELLOW+str(warning),colorama.Fore.RESET)
 
 def csv_write(file_name, limit, data):
    '''
