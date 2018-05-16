@@ -32,10 +32,11 @@ sys.path.insert(0, LIB_DIR)
 # Bug for third party libs - workaround - After first installation it need to rerun the script.
 # Don't know why, still under investigation.
 import_list = [
-   ('sqlalchemy', '1.2.7', 'SQLAlchemy-1.2.7-py3.6.egg-info'), # Database connector
-   ('pymysql', '0.8.1', 'PyMySQL-0.8.1.dist-info'),            # Database driver
-   ('paramiko', '2.4.1', 'paramiko-2.4.1.dist-info'),          # SSH connector
-   ('colorama', '0.3.3', 'colorama-0.3.3-py3.6.egg-info')      # Colloring output
+   ('sqlalchemy', '1.2.7', 'SQLAlchemy-1.2.7-py3.6.egg-info'),   # Database connector
+   ('pymysql',    '0.8.1', 'PyMySQL-0.8.1.dist-info'),           # Database driver
+   ('paramiko',   '2.4.1', 'paramiko-2.4.1.dist-info'),          # SSH connector
+   ('lxml',       '4.2.1', 'lxml-4.2.1.dist-info'),              # XML toolkit
+   ('colorama',   '0.3.3', 'colorama-0.3.3-py3.6.egg-info')      # Colloring output
 ]
 
 for line in import_list:
