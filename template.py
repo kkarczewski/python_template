@@ -283,11 +283,11 @@ def opt_read_xml(file_name):
    Test usage of xml reader.
    '''
    xml_file = read_xml_file(file_name)
-   print(etree.tostring(root, pretty_print=True).decode('ascii'))
+   print(etree.tostring(xml_file, pretty_print=True).decode('ascii'))
   
 def opt_help():
    parser.print_help()
-   msg = 'Printdded help'
+   msg = 'Printed help'
    return msg
 
 # #############################################################################
@@ -319,7 +319,7 @@ write password in prompt.''')
       help = 'Database port number.')
    parser.add_argument('--schema','-S',
       default = 'mysql',
-      help = 'Database schema name.')  
+      help = 'Database schema name.')
    parser.add_argument('--read_file','-rf',
       help='Test reading all file content. Require file_path.')
    parser.add_argument('--read_ex_comment','-rec',
