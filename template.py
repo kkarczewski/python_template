@@ -282,8 +282,8 @@ def opt_read_xml(file_name):
    '''
    Test usage of xml reader.
    '''
-   xml_file = read_xml_file(file_name)
-   print(etree.tostring(xml_file, pretty_print=True).decode('ascii'))
+   xml_tree = read_xml_file(file_name)
+   print(etree.tostring(xml_tree, pretty_print=True).decode('ascii'))
   
 def opt_help(parser):
    parser.print_help()
