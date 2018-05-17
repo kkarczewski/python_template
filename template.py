@@ -12,6 +12,7 @@ import os            # standard os lib
 import sys           # standard sys lib
 import csv           # standard csv lib for csv file I/O
 import string        # standard string lib
+import logging       # standard logging lib
 import getpass       # standard gepass lib to hiding password
 import argparse      # standard argparse lib to manage args from cmd
 import subprocess    # standard subprocess lib to executing bash commend thru python
@@ -213,6 +214,25 @@ def read_xml_file(path):
       print('Problem with file or filepath.')
       print(e)
 
+def logger(lvl, msg, logfile):
+   logging.basicConfig(filename=logfile,
+                       format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                       datefmt='%Y.%m.%d_%H:%M:%S'
+   )
+
+   if lvl == 'DEBUG':
+      logging.debug(msg)
+   elif lvl == 'INFO':
+      logging.info(msg)
+   elif lvl == 'WARNING':
+      logging.warning(msg)
+   elif lvl == 'ERROR':
+      logging.error(msg)
+   elif lvl == 'CRITICAL':
+      logging.critical(msg)
+   else:
+      logging.debug(msg)
+
 # #############################################################################
 # operations
 # #############################################################################
@@ -285,6 +305,9 @@ def opt_read_xml(file_name):
    xml_tree = read_xml_file(file_name)
    print(etree.tostring(xml_tree, pretty_print=True).decode('ascii'))
 
+def opt_logger(file_path):
+   logger('CRITICAL', 'Very important message', file_path)
+
 def opt_help(parser):
    parser.print_help()
    msg = 'Printed help'
@@ -339,6 +362,10 @@ write password in prompt.''')
       help='Test executing bash command with subprocess. Required cmd.')
    parser.add_argument('--read_xml','-rx',
       help='Test read xml file. Required file_path.')
+   parser.add_argument('--log','-l',
+      nargs='?',
+      const='default.log',
+      help='Test logger function. Required file_path.')
 
    argv = sys.argv[1:]
    args = parser.parse_args(argv)
@@ -363,6 +390,8 @@ write password in prompt.''')
          opt_subprocess(args.subprocess)
       elif 'read_xml' in args:
          opt_read_xml(args.read_xml)
+      elif 'log' in args:
+         opt_logger(args.log)
       else:
          opt_help(parser)
    except Exception as e:
