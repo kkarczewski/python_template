@@ -12,6 +12,7 @@ import os            # standard os lib
 import sys           # standard sys lib
 import csv           # standard csv lib for csv file I/O
 import string        # standard string lib
+import syslog        # standard syslog lib
 import logging       # standard logging lib
 import getpass       # standard gepass lib to hiding password
 import argparse      # standard argparse lib to manage args from cmd
@@ -232,6 +233,9 @@ def logger(lvl, msg, logfile):
       logging.critical(msg)
    else:
       logging.debug(msg)
+      
+def my_syslog(params):
+   syslog.syslog(syslog.LOG_INFO,'Very important info message!')
 
 # #############################################################################
 # operations
@@ -366,6 +370,10 @@ write password in prompt.''')
       nargs='?',
       const='default.log',
       help='Test logger function. Required file_path.')
+   parser.add_argument('--syslog','-ss',
+      nargs='?',
+      const=True,
+      help='Test logging with syslog module')
 
    argv = sys.argv[1:]
    args = parser.parse_args(argv)
@@ -392,6 +400,8 @@ write password in prompt.''')
          opt_read_xml(args.read_xml)
       elif 'log' in args:
          opt_logger(args.log)
+      elif 'syslog' in args:
+         my_syslog(args)
       else:
          opt_help(parser)
    except Exception as e:
